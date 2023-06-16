@@ -1,35 +1,33 @@
-import urllib.request
-import gzip
 import networkx as nx
 import matplotlib.pyplot as plt
-url = "https://snap.stanford.edu/data/bigdata/communities/com-friendster.ungraph.txt.gz"
-dataset_path = "com-friendster.ungraph.txt.gz"
-urllib.request.urlretrieve(url, dataset_path)
-with gzip.open(dataset_path, "rb") as file_in:
-    with open("com-friendster.ungraph.txt", "wb") as file_out:
-        file_out.write(file_in.read())
 
-graph = nx.read_edgelist("com-friendster.ungraph.txt")
+G = nx.read_edgelist ('com-friendster.all.cmty.txt')
 
-print("Number of nodes:", graph.number_of_nodes())
-print("Number of edges:", graph.number_of_edges())
+average_friends_of_friends = {}
 
-avg_friends_of_friends = {}
-for node in graph.nodes():
-    friends = set(graph.neighbors(node))
-    friends_of_friends = set()
+for node in G.nodes ():
+    friends = set (G.neighbors (node))
+    friends_of_friends = set ()
+
     for friend in friends:
-        friends_of_friends.update(graph.neighbors(friend))
-    friends_of_friends -= friends
-    avg_friends_of_friends[node] = len(friends_of_friends) / len(friends) if len(friends) > 0 else 0
+        friends_of_friends.update (G.neighbors (friend))
 
-avg_friends_of_friends_values = list(avg_friends_of_friends.values())
-avg_friends_of_friends_counts = {value: avg_friends_of_friends_values.count(value) for value in set(avg_friends_of_friends_values)}
+    friends_of_friends.discard (node)
 
-sorted_avg_friends_of_friends = sorted(avg_friends_of_friends_counts.keys())
+    if len (friends_of_friends) > 0:
+        avg_friends_of_friends = len (friends_of_friends) / len (friends_of_friends)
+        average_friends_of_friends[node] = avg_friends_of_friends
 
-plt.bar(sorted_avg_friends_of_friends, [avg_friends_of_friends_counts[value] for value in sorted_avg_friends_of_friends])
-plt.xlabel('Average Friends-of-Friends')
-plt.ylabel('Frequency')
-plt.title('Average Friends-of-Friends Distribution')
-plt.show()
+avg_fof_distribution = {}
+
+for avg_fof in average_friends_of_friends.values ():
+    if avg_fof in avg_fof_distribution:
+        avg_fof_distribution[avg_fof] += 1
+    else:
+        avg_fof_distribution[avg_fof] = 1
+
+plt.bar (avg_fof_distribution.keys (), avg_fof_distribution.values ())
+plt.xlabel ('Average Friends-of-Friends')
+plt.ylabel ('Number Of Node')
+plt.title ('Average Friends-of-Friends Distribution')
+plt.show ()

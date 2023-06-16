@@ -1,31 +1,19 @@
-import urllib.request
-import gzip
 import networkx as nx
 import matplotlib.pyplot as plt
 
-url = "https://snap.stanford.edu/data/bigdata/communities/com-friendster.ungraph.txt.gz"
-dataset_path = "com-friendster.ungraph.txt.gz"
+G = nx.read_edgelist('com-friendster.top5000.cmty.txt')
 
-urllib.request.urlretrieve(url, dataset_path)
+k_core_sizes = nx.core_number(G).values()
+k_core_size_distribution = {}
 
-with gzip.open(dataset_path, "rb") as file_in:
-    with open("com-friendster.ungraph.txt", "wb") as file_out:
-        file_out.write(file_in.read())
+for size in k_core_sizes:
+    if size in k_core_size_distribution:
+        k_core_size_distribution[size] += 1
+    else:
+        k_core_size_distribution[size] = 1
 
-graph = nx.read_edgelist("com-friendster.ungraph.txt")
-
-print("Number of nodes:", graph.number_of_nodes())
-print("Number of edges:", graph.number_of_edges())
-
-k_cores = nx.core_number(graph)
-
-core_sizes = list(k_cores.values())
-core_size_counts = {core_size: core_sizes.count(core_size) for core_size in set(core_sizes)}
-
-sorted_core_sizes = sorted(core_size_counts.keys())
-
-plt.bar(sorted_core_sizes, [core_size_counts[core_size] for core_size in sorted_core_sizes])
+plt.bar(k_core_size_distribution.keys(), k_core_size_distribution.values())
 plt.xlabel('K-Core Size')
-plt.ylabel('Frequency')
+plt.ylabel('Number Of Node')
 plt.title('K-Core Size Distribution')
 plt.show()

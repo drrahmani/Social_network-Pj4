@@ -1,26 +1,20 @@
-import urllib.request
-import gzip
 import networkx as nx
 import matplotlib.pyplot as plt
 
-url = "https://snap.stanford.edu/data/bigdata/communities/com-friendster.ungraph.txt.gz"
-dataset_path = "com-friendster.ungraph.txt.gz"
+G = nx.read_edgelist('com-friendster.all.cmty.txt')
 
-urllib.request.urlretrieve(url, dataset_path)
+clustering_coefficients = nx.clustering(G)
 
-with gzip.open(dataset_path, "rb") as file_in:
-    with open("com-friendster.ungraph.txt", "wb") as file_out:
-        file_out.write(file_in.read())
+clustering_distribution = {}
 
-graph = nx.read_edgelist("com-friendster.ungraph.txt")
+for cc in clustering_coefficients.values():
+    if cc in clustering_distribution:
+        clustering_distribution[cc] += 1
+    else:
+        clustering_distribution[cc] = 1
 
-print("Number of nodes:", graph.number_of_nodes())
-print("Number of edges:", graph.number_of_edges())
-
-clustering_coefficients = nx.clustering(graph)
-
-plt.hist(list(clustering_coefficients.values()), bins=30, edgecolor='black')
-plt.xlabel('Clustering Coefficient')
+plt.bar(clustering_distribution.keys(), clustering_distribution.values())
+plt.xlabel('WCC Size Distribution')
 plt.ylabel('Frequency')
 plt.title('Clustering Coefficient Distribution')
 plt.show()

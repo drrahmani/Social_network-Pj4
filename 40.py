@@ -1,29 +1,19 @@
-import urllib.request
-import gzip
 import networkx as nx
 import matplotlib.pyplot as plt
 
-url = "https://snap.stanford.edu/data/bigdata/communities/com-friendster.ungraph.txt.gz"
-dataset_path = "com-friendster.ungraph.txt.gz"
+G = nx.read_edgelist('com-friendster.top5000.cmty.txt')
 
-urllib.request.urlretrieve(url, dataset_path)
+path_lengths = dict(nx.all_pairs_shortest_path_length(G))
+length_distribution = {}
 
-with gzip.open(dataset_path, "rb") as file_in:
-    with open("com-friendster.ungraph.txt", "wb") as file_out:
-        file_out.write(file_in.read())
+for source, paths in path_lengths.items():
+    for target, length in paths.items():
+        if length in length_distribution:
+            length_distribution[length] += 1
+        else:
+            length_distribution[length] = 1
 
-graph = nx.read_edgelist("com-friendster.ungraph.txt")
-
-
-print("Number of nodes:", graph.number_of_nodes())
-print("Number of edges:", graph.number_of_edges())
-
-
-path_lengths = dict(nx.all_pairs_shortest_path_length(graph))
-
-all_lengths = [length for source_lengths in path_lengths.values() for length in source_lengths.values()]
-
-plt.hist(all_lengths, bins=30, edgecolor='black')
+plt.bar(length_distribution.keys(), length_distribution.values())
 plt.xlabel('Path Length')
 plt.ylabel('Frequency')
 plt.title('Path Length Distribution')
